@@ -32,6 +32,14 @@ static void ftp_cmd_init(void)
         ftp_cmd[5].response_code        = RES_CDIR;
         ftp_cmd[6].cmd                  = "STOR";
         ftp_cmd[6].response_code        = RES_UPLOAD;
+        ftp_cmd[7].cmd                  = "TYPE I"
+        ftp_cmd[7].response_code        = RES_EXCUTE_SUCCESS;
+        ftp_cmd[8].cmd                  = "SYST";
+        ftp_cmd[8].response_code        = RES_SYST;
+        ftp_cmd[9].cmd                  = "PASV";
+        ftp_cmd[9].response_code        = RES_PASSIVE;
+        ftp_cmd[10].cmd                 = "PORT";
+        ftp_cmd[10].response_code       = RES_EXCUTE_SUCCESS;
 
         kInit = 1;
 }

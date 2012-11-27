@@ -12,6 +12,10 @@ enum RES_ {
         RES_CDIR                = 250,
         RES_SERVER_DOWN         = 421,
         RES_UPLOAD              = 150,
+        RES_SYST                = 215,
+        RES_EXCUTE_SUCCESS      = 200,
+        RES_PASSIVE             = 227,
+        RES_NOT_EXCUTE          = 202
 };
 
 enum Openrate_ {
@@ -23,6 +27,11 @@ enum Openrate_ {
         Mkdir           = 4,
         Cdir            = 5,
         Upload          = 6,
+        FileType        = 7,
+        PassiveMode     = 8,
+        PortMode        = 9,
+        FileSize        = 10,
+
         MaxIndex,
 };
 
