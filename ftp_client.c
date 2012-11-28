@@ -26,13 +26,13 @@ static void ftp_cmd_init(void)
         ftp_cmd[2].response_code        = RES_QUIT_SUCCESS;
         ftp_cmd[3].cmd                  = "PWD";
         ftp_cmd[3].response_code        = RES_PWD;
-        ftp_cmd[4].cmd                  = "MKD";
+        ftp_cmd[4].cmd                  = "MKD ";
         ftp_cmd[4].response_code        = RES_MKDIR;
-        ftp_cmd[5].cmd                  = "CWD";
-        ftp_cmd[5].response_code        = RES_CDIR;
+        ftp_cmd[5].cmd                  = "CWD ";
+        ftp_cmd[5].response_code        = RES_CHANGE_DIR;
         ftp_cmd[6].cmd                  = "STOR";
         ftp_cmd[6].response_code        = RES_UPLOAD;
-        ftp_cmd[7].cmd                  = "TYPE I"
+        ftp_cmd[7].cmd                  = "TYPE I";
         ftp_cmd[7].response_code        = RES_EXCUTE_SUCCESS;
         ftp_cmd[8].cmd                  = "SYST";
         ftp_cmd[8].response_code        = RES_SYST;
@@ -98,11 +98,16 @@ static int ftp_send_cmd(int index,
                 return FTP_FAIL;
         }
 
-        if (ftp_get_response(ftp_client) != ftp_cmd[index].response_code) {
-                return FTP_FAIL;
+        int response_code = ftp_get_response(ftp_client);
+        if (response_code == ftp_cmd[index].response_code) {
+                return FTP_OK;
         }
 
-        return FTP_OK;
+        if (response_code == RES_SERVER_DOWN) {
+                return FTP_SERVER_DOWN;
+        }
+
+        return FTP_FAIL;
 }
 
 static int ftp_login(struct ftp_connect *client)
@@ -149,14 +154,45 @@ int ftp_release(struct ftp_connect *client)
         return FTP_OK;
 }
 
-static int ftp_cwd(struct ftp_connect *client)
+static int ftp_cwd(struct ftp_connect *client, char *path)
 {
-
+        return ftp_send_cmd(ChangeDir, path, client);
 }
 
-int ftp_upload(struct ftp_connect *client)
+static int ftp_mkdir(struct ftp_connect *client, char *path)
 {
-        int ret = ftp_upload(client);
+        return ftp_send_cmd(Mkdir, path, client);
+}
+
+static int ftp_change_dir(struct ftp_connect *client, char *absolute_path)
+{
+        int ret = 0;
+
+        while (1) {
+                ret = ftp_cwd(client, absolute_path);
+                if (ret == FTP_OK ||
+                        ret == FTP_SERVER_DOWN) {
+                        break;
+                }
+
+                ret = ftp_mkdir(client, absolute_path);
+                if (ret == FTP_FAIL ||
+                        ret == FTP_SERVER_DOWN) {
+                        break;
+                }
+        }
+
+        return ret;
+}
+
+static int ftp_put_file(struct ftp_connect *client, char *filename)
+{
+        return 0;
+}
+
+int ftp_upload(struct ftp_connect *client, struct file_description *file)
+{
+        int ret = ftp_change_dir(client, file->remote_dir);
         if (ret) {
                 return FTP_FAIL;
         }
@@ -172,11 +208,21 @@ int main()
         memcpy(client.username, "odin", sizeof(client.username));
         memcpy(client.password, "odin", sizeof(client.password));
 
+        struct file_description file;
+        memcpy(file.remote_dir, "/test/X00/192.168.0.188/20121128/09", sizeof(file.remote_dir));
+        memcpy(file.file_name, "a.txt", sizeof(file.file_name));
+        int size = 1024 * 1024;
+        char *ptr = (char *)malloc(size * sizeof(char));
+        file.file_buffer = ptr;
+        file.file_size = size;
+
         if (ftp_init(&client) == FTP_OK) {
-                ftp_upload(&client);
+                ftp_upload(&client, &file);
         }
 
         ftp_release(&client);
+        free(ptr);
+        ptr = NULL;
 
         return 0;
 }
