@@ -15,7 +15,9 @@ enum RES_ {
         RES_SYST                = 215,
         RES_EXCUTE_SUCCESS      = 200,
         RES_PASSIVE             = 227,
-        RES_NOT_EXCUTE          = 202
+        RES_NOT_EXCUTE          = 202,
+        RES_UPLOADED_SIZE       = 213,
+        RES_REST_POSITION       = 350,
 };
 
 enum Openrate_ {
@@ -30,7 +32,8 @@ enum Openrate_ {
         FileType        = 7,
         PassiveMode     = 8,
         PortMode        = 9,
-        FileSize        = 10,
+        UploadedSize    = 10,
+        RestPosition    = 11,
 
         MaxIndex,
 };
@@ -38,6 +41,11 @@ enum Openrate_ {
 struct _ftp_cmd {
         char            *cmd;
         unsigned int    response_code;
+};
+
+struct _data_connect {
+        char    addr[64];
+        unsigned int port;
 };
 
 #endif
