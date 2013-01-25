@@ -189,7 +189,8 @@ static int ftp_get_passive(struct ftp_connect *client,
         sscanf(tmp1, "%i,%i,%i,%i,%i,%i", &h1, &h2, &h3, &h4, &p1, &p2);
         data_connect->port = (p1 << 8) + p2;
         sprintf(data_connect->addr, "%d.%d.%d.%d", h1, h2, h3, h4);
-        //printf("pasv return addr %s and port is %d\n", data_connect->addr, data_connect->port);
+        /* printf("pasv return addr %s and port is %d\n",
+                      data_connect->addr, data_connect->port);*/
 
         return FTP_OK;
 }
@@ -244,13 +245,12 @@ static int ftp_put_file_pasv(struct ftp_connect *client,
         socket_set_nonblock(client->data_fd);
         ret = socket_connect(client->data_fd, data_connect.addr,
                                         data_connect.port);
+        socket_set_block(client->data_fd);
         if (ret) {
                 socket_close(client->data_fd);
                 printf("connect failed\n");
                 return FTP_FAIL;
         }
-
-        socket_set_block(client->data_fd);
 
         ret = ftp_send_cmd(Upload, file->file_name, client);
         if (ret) {
@@ -260,10 +260,10 @@ static int ftp_put_file_pasv(struct ftp_connect *client,
 
         ret = socket_write(client->data_fd, file->file_buffer + exist_size,
                                 file->file_size - exist_size, kSocketTimeout);
-
         socket_close(client->data_fd);
 
-        if (ret == SOCKET_OK) {
+        int response_code = ftp_get_response(client);
+        if (response_code == RES_TRANSFER_OK) {
                 return FTP_OK;
         } else {
                 return FTP_FAIL;
@@ -338,3 +338,4 @@ void ftp_release(void)
         free(ftp_cmd);
         ftp_cmd = NULL;
 }
+

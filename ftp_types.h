@@ -18,6 +18,7 @@ enum RES_ {
         RES_NOT_EXCUTE          = 202,
         RES_UPLOADED_SIZE       = 213,
         RES_REST_POSITION       = 350,
+        RES_TRANSFER_OK         = 226,
 };
 
 enum Openrate_ {
