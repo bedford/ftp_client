@@ -140,22 +140,64 @@ static int ftp_mkdir(struct ftp_connect *client, char *path)
         return ftp_send_cmd(Mkdir, path, client);
 }
 
-static int ftp_change_dir(struct ftp_connect *client, char *absolute_path)
+static int ftp_enter_dir(struct ftp_connect *client, char *path)
 {
         int ret = 0;
-
-        while (1) {
-                ret = ftp_cwd(client, absolute_path);
+        do {
+                ret = ftp_cwd(client, path);
                 if (ret == FTP_OK ||
                         ret == FTP_SERVER_DOWN) {
                         break;
                 }
 
-                ret = ftp_mkdir(client, absolute_path);
+                ret = ftp_mkdir(client, path);
                 if (ret == FTP_FAIL ||
                         ret == FTP_SERVER_DOWN) {
                         break;
                 }
+
+                ret = ftp_cwd(client, path);
+                if (ret == FTP_OK ||
+                        ret == FTP_SERVER_DOWN) {
+                        break;
+                }
+
+        } while(0);
+
+        return ret;
+}
+
+static int ftp_change_dir(struct ftp_connect *client, char *absolute_path)
+{
+        int ret = 0;
+        char path[32];
+        char *p = absolute_path;
+        if (*p == '/') {
+                ++p;
+        }
+
+        int index = 0;
+        while (1) {
+                index = 0;
+                memset(path, 0, sizeof(path));
+                while ((*p != '/') && (*p != '\0')) {
+                        path[index] = *p;
+                        ++index;
+                        ++p;
+                }
+
+                path[index] = '\0';
+                if (path[0] != '\0') {
+                        ret = ftp_enter_dir(client, path);
+                        if (ret != FTP_OK) {
+                                break;
+                        }
+                }
+
+                if (*p == '\0') {
+                        break;
+                }
+                ++p;
         }
 
         return ret;
