@@ -164,7 +164,8 @@ void socket_clear_recv_buffer(int socket_fd)
 
         while (1) {
                 ret = socket_read(socket_fd, buf, buf_size, 0);
-                if (ret == SOCKET_TIMEOUT) {
+                if ((ret == SOCKET_TIMEOUT)
+                        || (ret == SOCKET_FAIL)) {
                         break;
                 }
         }

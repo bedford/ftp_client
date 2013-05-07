@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "ftp_types.h"
 #include "ftp_client.h"
@@ -15,6 +16,12 @@ static const int kMinLength = 32;
 static int kInit = 0;
 static struct _ftp_cmd *ftp_cmd = NULL;
 static char response[kMaxResponseSize];
+
+static void processSignal(int signo)
+{
+        printf("signal %d\n", signo);
+        signal(signo, processSignal);
+}
 
 static void ftp_cmd_init(void)
 {
@@ -174,6 +181,11 @@ static int ftp_change_dir(struct ftp_connect *client, char *absolute_path)
         char *p = absolute_path;
         if (*p == '/') {
                 ++p;
+        }
+
+        ret = ftp_enter_dir(client, "/");
+        if (ret != FTP_OK) {
+                return ret;
         }
 
         int index = 0;
@@ -373,6 +385,7 @@ int ftp_close(struct ftp_connect *client)
 void ftp_init(void)
 {
         ftp_cmd_init();
+        signal(SIGPIPE, processSignal);
 }
 
 void ftp_release(void)
