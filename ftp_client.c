@@ -62,7 +62,7 @@ static int ftp_get_response(struct ftp_connect *ftp_client)
         char response_code[4] = {0};
         memset(response, 0, sizeof(response));
 
-        int len = socket_read(ftp_client->control_fd, response, 
+        int len = socket_readn(ftp_client->control_fd, response,
                                 kMaxResponseSize, kSocketTimeout);
         if (len <= 0) {
                 //printf("response buffer is %d\n", len);

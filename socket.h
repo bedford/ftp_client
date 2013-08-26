@@ -15,7 +15,6 @@ void socket_set_nonblock(int socket_fd);
 
 void socket_set_block(int socket_fd);
 
-
 /**
  * @brief       connect to the dest_addr host, dest_port 
  *
@@ -27,45 +26,40 @@ void socket_set_block(int socket_fd);
  * @retval      -1      fail
  * @retval      0       success
  */
-
 int socket_connect(int socket_fd, char *dest_addr, int dest_port);
 
 
 /**
- * @brief       socket_check_writable To check whether the socket is writable
+ * @brief       write buffer to socket
  *
- * @param       socket_fd [I ] The socket file description to check
- * @param       ms      [I ]   timeout up bound (Unit: ms)
+ * @param       socket_fd [I ] socket file description
+ * @param       buf       [I ] to write buffer
+ * @param       length    [I ] length of buffer to send
+ * @param       ms        [I ] timeout
  *
- * @return      result of able to write or not
- * @retval      -2      timeout error
- * @retval      -1      unwritable
- * @retval      0       writable
+ * @return      length of buffer received
  */
-
 int socket_write(int socket_fd, char *buf, int length, int ms);
 
 
 /**
- * @brief       socket_check_readable To check whether the socket is readable
+ * @brief       read buffers
  *
- * @param       socket_fd [I ] The socket file description to check
- * @param       ms      [I ]   timeout up bound (Unit: ms)
+ * @param       socket_fd [I ] socket file description
+ * @param       buf       [O ] to obtain received buffer
+ * @param       max_length[I ] max length of buffer to receive
+ * @param       ms        [I ] timeout
  *
- * @return      result of able to read or not
- * @retval      -2      timeout error
- * @retval      -1      unreadable
- * @retval      0       readable
+ * @return      length of buffer received
  */
+int socket_readn(int socket_fd, char *buf, int max_length, int ms);
 
-int socket_read(int socket_fd, char *buf, int max_length, int ms);
 
 /**
  * @brief       socket_clear_recv_buffer To clear socket receive buffer
  *
  * @param       socket_fd [I ] The socket file description to clear
  */
-
 void socket_clear_recv_buffer(int socket_fd);
 
 

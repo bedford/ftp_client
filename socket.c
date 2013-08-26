@@ -28,6 +28,17 @@ void socket_set_block(int socket_fd)
         fcntl(socket_fd, F_SETFL, flags);
 }
 
+/**
+ * @brief       socket_check_writable To check whether the socket is writable
+ *
+ * @param       socket_fd [I ] The socket file description to check
+ * @param       ms      [I ]   timeout up bound (Unit: ms)
+ *
+ * @return      result of able to write or not
+ * @retval      -2      timeout error
+ * @retval      -1      unwritable
+ * @retval      0       writable
+ */
 static int socket_check_writable(int socket_fd, int ms)
 {
         fd_set fdw;
@@ -52,6 +63,17 @@ static int socket_check_writable(int socket_fd, int ms)
         return SOCKET_FAIL;
 }
 
+/**
+ * @brief       socket_check_readable To check whether the socket is readable
+ *
+ * @param       socket_fd [I ] The socket file description to check
+ * @param       ms      [I ]   timeout up bound (Unit: ms)
+ *
+ * @return      result of able to read or not
+ * @retval      -2      timeout error
+ * @retval      -1      unreadable
+ * @retval      0       readable
+ */
 static int socket_check_readable(int socket_fd, int ms)
 {
         fd_set fdr;
@@ -141,7 +163,7 @@ int socket_write(int socket_fd, char *buf, int length, int ms)
         return SOCKET_OK;
 }
 
-int socket_read(int socket_fd, char *buf, int max_length, int ms)
+int socket_readn(int socket_fd, char *buf, int max_length, int ms)
 {
         int length  = 0;
         int ret = 0;
@@ -154,6 +176,33 @@ int socket_read(int socket_fd, char *buf, int max_length, int ms)
         }
 
         return length;
+}
+
+int socket_read(int socket_fd, char *buf, int req_length, int ms)
+{
+        char *ptr = (char *)buf;
+        int rLen = 0;
+        int n = 0;
+        int ret = 0;
+
+        while (rLen < req_length) {
+                ret = socket_check_readable(socket_fd, ms);
+                if (ret == SOCKET_OK) {
+                        n = recv(socket_fd, ptr + rLen, req_length - rLen, 0);
+                        if (n == -1) {
+                                ret = SOCKET_FAIL;
+                                break;
+                        } else if (n == 0) {
+                                ret = SOCKET_FAIL;
+                                break;
+                        }
+                        rLen += n;
+                } else {
+                        break;
+                }
+        }
+
+        return ret;
 }
 
 void socket_clear_recv_buffer(int socket_fd)
